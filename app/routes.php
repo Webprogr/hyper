@@ -51,7 +51,7 @@ return function (App $app) {
     * Checked for empty, filter sanitized
     * Logged all
     */
-    $app->post('/login', function (Request $request, Response $response, array $args)
+    $app->post('/validateuser', function (Request $request, Response $response, array $args)
     {
           $expected = $request->getParsedBody();
           
@@ -291,7 +291,7 @@ $app->post('/booking', function (Request $request, Response $response, array $ar
          }
           if(!empty($data['cuMobileNo'])){
          $cuMobileNo= filter_var($data['cuMobileNo'],FILTER_SANITIZE_STRING);
-         $cuMobileNo = htmlentities($totalFees, ENT_QUOTES, 'UTF-8');
+         $cuMobileNo = htmlentities($cuMobileNo, ENT_QUOTES, 'UTF-8');
          }
           if(!empty($data['quoteId'])){
          $quoteId= filter_var($data['quoteId'],FILTER_SANITIZE_STRING);
@@ -647,6 +647,34 @@ cfm.cuLongitude2,cfm.totalPrice, cfm.quoteId FROM hyper_cnfmbook cfm WHERE cfm.c
     
     
     
+      $app->get('/getcoupon', function (Request $request, Response $response)
+    {
+        $logger = $this->get(LoggerInterface::class);
+        $this->logger = $logger;
+        //$data = $request->getParsedBody();
+        $params = $request->getQueryParams('hyperPromoCode', $default = null);
+       
+       
+        if(empty($params )){
+          
+            $response->getBody()
+            ->write(json_encode(['error' => true, 'message' => 'Required customerId']));
+            return $response;
+          }
+        $hyperPromoCode= $params['hyperPromoCode'];
+        
+        $this->logger->info('Got hyperPromoCode', ['payload'=>$hyperPromoCode]);  
+       
+        $db = $this->get(PDO::class);
+        $sth = $db->prepare("SELECT * FROM hyper_coupon WHERE hyperPromoCode = '$hyperPromoCode' AND end > NOW()");
+        $sth->execute();
+        $data = $sth->fetchAll(PDO::FETCH_ASSOC);
+        $payload = json_encode($data);
+       
+        $response->getBody()
+            ->write($payload);
+        return $response->withHeader('Content-Type', 'application/json');
+    }) ->add(\PsrJwt\Factory\JwtMiddleware::html('!secReT$123*', 'jwt', 'Authorisation Failed'));
     
     
     
@@ -654,18 +682,463 @@ cfm.cuLongitude2,cfm.totalPrice, cfm.quoteId FROM hyper_cnfmbook cfm WHERE cfm.c
     
     
     
+ $app->post('/confirm', function (Request $request, Response $response, array $args)
+    {   $logger = $this->get(LoggerInterface::class);
+        $this->logger = $logger; 
+        
+        $data = $request->getParsedBody();
+        $this->logger->info('changePassByEmail', ['payload'=>$data]);  
+       
+         if(!empty($data['customerId'])){
+         $customerId = filter_var($data['customerId'],FILTER_SANITIZE_STRING);
+         $customerId = htmlentities($customerId, ENT_QUOTES, 'UTF-8');
+         }
+        if(!empty($data['type'])){
+         $type = filter_var($data['type'],FILTER_SANITIZE_STRING);
+         $type = htmlentities($type, ENT_QUOTES, 'UTF-8');
+         }
+        if(!empty($data['cuAddress'])){
+         $cuAddress = filter_var($data['cuAddress'],FILTER_SANITIZE_STRING);
+         $cuAddress = htmlentities($cuAddress, ENT_QUOTES, 'UTF-8');
+         }
+         if(!empty($data['houseNo'])){
+         $houseNo = filter_var($data['houseNo'],FILTER_SANITIZE_STRING);
+         $houseNo = htmlentities($houseNo, ENT_QUOTES, 'UTF-8');
+         }
+          if(!empty($data['packageDetails'])){
+          $packageDetails = filter_var($data['packageDetails'],FILTER_SANITIZE_STRING);
+          $packageDetails = htmlentities($packageDetails, ENT_QUOTES, 'UTF-8');
+         }
+       if(!empty($data['packLength'])){
+         $packLength = filter_var($data['packLength'],FILTER_SANITIZE_STRING);
+         $packLength = htmlentities($packLength, ENT_QUOTES, 'UTF-8');
+         }
+        if(!empty($data['packWidth'])){
+         $packWidth = filter_var($data['packWidth'],FILTER_SANITIZE_STRING);
+         $packWidth = htmlentities($packWidth, ENT_QUOTES, 'UTF-8');
+         }
+         if(!empty($data['packHeight'])){
+         $packHeight = filter_var($data['packHeight'],FILTER_SANITIZE_STRING);
+         $packHeight = htmlentities($packHeight, ENT_QUOTES, 'UTF-8');
+         }
+          if(!empty($data['cuMobileNo'])){
+          $cuMobileNo = filter_var($data['cuMobileNo'],FILTER_SANITIZE_STRING);
+          $cuMobileNo = htmlentities($cuMobileNo, ENT_QUOTES, 'UTF-8');
+         }
+      if(!empty($data['carType'])){
+         $carType = filter_var($data['carType'],FILTER_SANITIZE_STRING);
+         $carType = htmlentities($carType, ENT_QUOTES, 'UTF-8');
+         }
+          if(!empty($data['pickupAddress'])){
+          $pickupAddress = filter_var($data['pickupAddress'],FILTER_SANITIZE_STRING);
+          $pickupAddress = htmlentities($pickupAddress, ENT_QUOTES, 'UTF-8');
+         }
+     
+     
+     
+     
+     
+     if(!empty($data['dropoffAddress'])){
+         $dropoffAddress = filter_var($data['dropoffAddress'],FILTER_SANITIZE_STRING);
+         $dropoffAddress = htmlentities($dropoffAddress, ENT_QUOTES, 'UTF-8');
+         }
+        if(!empty($data['cuLatitude1'])){
+         $cuLatitude1 = filter_var($data['cuLatitude1'],FILTER_SANITIZE_STRING);
+         $cuLatitude1 = htmlentities($cuLatitude1, ENT_QUOTES, 'UTF-8');
+         }
+         if(!empty($data['cuLongitude1'])){
+         $cuLongitude1 = filter_var($data['cuLongitude1'],FILTER_SANITIZE_STRING);
+         $cuLongitude1 = htmlentities($cuLongitude1, ENT_QUOTES, 'UTF-8');
+         }
+          if(!empty($data['cuLatitude2'])){
+          $cuLatitude2 = filter_var($data['cuLatitude2'],FILTER_SANITIZE_STRING);
+          $cuLatitude2 = htmlentities($cuLatitude2, ENT_QUOTES, 'UTF-8');
+         }
+       if(!empty($data['cuLongitude2'])){
+         $cuLongitude2 = filter_var($data['cuLongitude2'],FILTER_SANITIZE_STRING);
+         $cuLongitude2 = htmlentities($cuLongitude2, ENT_QUOTES, 'UTF-8');
+         }
+        if(!empty($data['travelKm'])){
+         $travelKm = filter_var($data['travelKm'],FILTER_SANITIZE_STRING);
+         $travelKm = htmlentities($travelKm, ENT_QUOTES, 'UTF-8');
+         }
+         if(!empty($data['travelTiming'])){
+         $travelTiming = filter_var($data['travelTiming'],FILTER_SANITIZE_STRING);
+         $travelTiming = htmlentities($travelTiming, ENT_QUOTES, 'UTF-8');
+         }
+          if(!empty($data['price'])){
+          $price = filter_var($data['price'],FILTER_SANITIZE_STRING);
+          $price = htmlentities($price, ENT_QUOTES, 'UTF-8');
+         }
+      if(!empty($data['discountPrice'])){
+         $discountPrice = filter_var($data['discountPrice'],FILTER_SANITIZE_STRING);
+         $discountPrice = htmlentities($discountPrice, ENT_QUOTES, 'UTF-8');
+         }
+          if(!empty($data['totalPrice'])){
+          $totalPrice = filter_var($data['totalPrice'],FILTER_SANITIZE_STRING);
+          $totalPrice = htmlentities($totalPrice, ENT_QUOTES, 'UTF-8');
+         }
+     
+      if(!empty($data['hyperPromoCode'])){
+         $hyperPromoCode = filter_var($data['hyperPromoCode'],FILTER_SANITIZE_STRING);
+         $hyperPromoCode = htmlentities($hyperPromoCode, ENT_QUOTES, 'UTF-8');
+         }
+          if(!empty($data['quoteId'])){
+          $quoteId = filter_var($data['quoteId'],FILTER_SANITIZE_STRING);
+          $quoteId = htmlentities($quoteId, ENT_QUOTES, 'UTF-8');
+         }
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+    if(empty($data )){
+            $this->logger->warning('Required params');  
+         
+          }
+    $sql = "INSERT INTO hyper_cnfmbook (customerId,type,cuAddress,houseNo,packageDetails,packLength,packWidth,packHeight,cuMobileNo,carType,pickupAddress,dropoffAddress,cuLatitude1,cuLongitude1,cuLatitude2,cuLongitude2,travelKm,travelTiming,price,discountPrice,totalPrice,quoteId,status,bookingDate) 
+				VALUES (:customerId,:type,:cuAddress,:houseNo,:packageDetails,:packLength,:packWidth,:packHeight,:cuMobileNo,:carType, :pickupAddress, :dropoffAddress, :cuLatitude1, :cuLongitude1,:cuLatitude2,:cuLongitude2,:travelKm, :travelTiming, :price, :discountPrice, :totalPrice, :quoteId, :status, :bookingDate)";
+    $db = $this->get(PDO::class);
+    $stmt = $db->prepare($sql);
+    $stmt->bindParam("customerId", $customerId);
+				$stmt->bindParam("type", $type);
+				$stmt->bindParam("cuAddress", $cuAddress);
+				$stmt->bindParam("houseNo", $houseNo);
+				$stmt->bindParam("packageDetails", $packageDetails);
+				$stmt->bindParam("packLength", $packLength);
+				$stmt->bindParam("packWidth", $packWidth);
+				$stmt->bindParam("packHeight", $packHeight);
+				$stmt->bindParam("cuMobileNo", $cuMobileNo);
+				$stmt->bindParam("carType", $carType);
+				$stmt->bindParam("pickupAddress", $pickupAddress);
+				$stmt->bindParam("dropoffAddress", $dropoffAddress);
+				$stmt->bindParam("cuLatitude1", $cuLatitude1);
+				$stmt->bindParam("cuLongitude1", $cuLongitude1);
+				$stmt->bindParam("cuLatitude2", $cuLatitude2);
+				$stmt->bindParam("cuLongitude2", $cuLongitude2);
+				$stmt->bindParam("travelKm", $travelKm);
+				$stmt->bindParam("travelTiming", $travelTiming);
+				$stmt->bindParam("price", $price);
+				$stmt->bindParam("discountPrice", $discountPrice);
+				$stmt->bindParam("totalPrice", $totalPrice);
+				$stmt->bindParam("quoteId", $quoteId);
+				$stmt->bindParam("status", $status);
+				$stmt->bindParam("bookingDate", $bookingDate);
+    $stmt->execute();
+    $data = $sth->fetchAll(PDO::FETCH_ASSOC);
+        $payload = json_encode($data);
+       
+        $response->getBody()
+            ->write($payload);
+        return $response->withHeader('Content-Type', 'application/json');
+    }) ->add(\PsrJwt\Factory\JwtMiddleware::html('!secReT$123*', 'jwt', 'Authorisation Failed'));
     
     
     
     
     
     
+$app->post('/cancelconfirm', function (Request $request, Response $response, array $args)
+    {   $logger = $this->get(LoggerInterface::class);
+        $this->logger = $logger; 
+        
+        $data = $request->getParsedBody();
+        $this->logger->info('Booking appointment', ['payload'=>$data]);  
+      
+        
+        if(!empty($data['type'])){
+         $type = filter_var($data['type'],FILTER_SANITIZE_STRING);
+         $type = htmlentities($type, ENT_QUOTES, 'UTF-8');
+         }
+        if(!empty($data['cuAddress'])){
+         $cuAddress= filter_var($data['cuAddress'],FILTER_SANITIZE_STRING);
+         $cuAddress = htmlentities($cuAddress, ENT_QUOTES, 'UTF-8');
+         }
+        if(!empty($data['houseNo'])){
+         $houseNo= filter_var($data['houseNo'],FILTER_SANITIZE_STRING);
+         $houseNo = htmlentities($houseNo, ENT_QUOTES, 'UTF-8');
+         }
+        if(!empty($data['packageDetails'])){
+         $packageDetails= filter_var($data['packageDetails'],FILTER_SANITIZE_STRING);
+         $packageDetails = htmlentities($packageDetails, ENT_QUOTES, 'UTF-8');
+         }
+        if(!empty($data['packLength'])){
+         $packLength= filter_var($data['packLength'],FILTER_SANITIZE_STRING);
+         $packLength = htmlentities($packLength, ENT_QUOTES, 'UTF-8');
+         }
+        if(!empty($data['packWidth'])){
+         $packWidth= filter_var($data['packWidth'],FILTER_SANITIZE_STRING);
+         $packWidth = htmlentities($packWidth, ENT_QUOTES, 'UTF-8');
+         }
+         if(!empty($data['packHeight'])){
+         $packHeight= filter_var($data['packHeight'],FILTER_SANITIZE_STRING);
+         $packHeight = htmlentities($packHeight, ENT_QUOTES, 'UTF-8');
+         }
+          if(!empty($data['cuMobileNo'])){
+         $cuMobileNo= filter_var($data['cuMobileNo'],FILTER_SANITIZE_STRING);
+         $cuMobileNo = htmlentities($cuMobileNo, ENT_QUOTES, 'UTF-8');
+         }
+          if(!empty($data['carType'])){
+         $carType= filter_var($data['carType'],FILTER_SANITIZE_STRING);
+         $carType = htmlentities($carType, ENT_QUOTES, 'UTF-8');
+         }
+     if(!empty($data['pickupAddress'])){
+         $pickupAddress= filter_var($data['pickupAddress'],FILTER_SANITIZE_STRING);
+         $pickupAddress = htmlentities($pickupAddress, ENT_QUOTES, 'UTF-8');
+         }
+     
+      if(!empty($data['dropoffAddress'])){
+         $dropoffAddress = filter_var($data['dropoffAddress'],FILTER_SANITIZE_STRING);
+         $dropoffAddress = htmlentities($dropoffAddress, ENT_QUOTES, 'UTF-8');
+         }
+        if(!empty($data['cuLatitude1'])){
+         $cuLatitude1 = filter_var($data['cuLatitude1'],FILTER_SANITIZE_STRING);
+         $cuLatitude1 = htmlentities($cuLatitude1, ENT_QUOTES, 'UTF-8');
+         }
+         if(!empty($data['cuLongitude1'])){
+         $cuLongitude1 = filter_var($data['cuLongitude1'],FILTER_SANITIZE_STRING);
+         $cuLongitude1 = htmlentities($cuLongitude1, ENT_QUOTES, 'UTF-8');
+         }
+          if(!empty($data['cuLatitude2'])){
+          $cuLatitude2 = filter_var($data['cuLatitude2'],FILTER_SANITIZE_STRING);
+          $cuLatitude2 = htmlentities($cuLatitude2, ENT_QUOTES, 'UTF-8');
+         }
+       if(!empty($data['cuLongitude2'])){
+         $cuLongitude2 = filter_var($data['cuLongitude2'],FILTER_SANITIZE_STRING);
+         $cuLongitude2 = htmlentities($cuLongitude2, ENT_QUOTES, 'UTF-8');
+         }
+        if(!empty($data['travelKm'])){
+         $travelKm = filter_var($data['travelKm'],FILTER_SANITIZE_STRING);
+         $travelKm = htmlentities($travelKm, ENT_QUOTES, 'UTF-8');
+         }
+         if(!empty($data['travelTiming'])){
+         $travelTiming = filter_var($data['travelTiming'],FILTER_SANITIZE_STRING);
+         $travelTiming = htmlentities($travelTiming, ENT_QUOTES, 'UTF-8');
+         }
+          if(!empty($data['price'])){
+          $price = filter_var($data['price'],FILTER_SANITIZE_STRING);
+          $price = htmlentities($price, ENT_QUOTES, 'UTF-8');
+         }
+      if(!empty($data['discountPrice'])){
+         $discountPrice = filter_var($data['discountPrice'],FILTER_SANITIZE_STRING);
+         $discountPrice = htmlentities($discountPrice, ENT_QUOTES, 'UTF-8');
+         }
+          if(!empty($data['totalPrice'])){
+          $totalPrice = filter_var($data['totalPrice'],FILTER_SANITIZE_STRING);
+          $totalPrice = htmlentities($totalPrice, ENT_QUOTES, 'UTF-8');
+         }
+     
+      if(!empty($data['hyperPromoCode'])){
+         $hyperPromoCode = filter_var($data['hyperPromoCode'],FILTER_SANITIZE_STRING);
+         $hyperPromoCode = htmlentities($hyperPromoCode, ENT_QUOTES, 'UTF-8');
+         }
+          if(!empty($data['quoteId'])){
+          $quoteId = filter_var($data['quoteId'],FILTER_SANITIZE_STRING);
+          $quoteId = htmlentities($quoteId, ENT_QUOTES, 'UTF-8');
+         }
+ 
+	$status = "customer-cancel";
+         if(empty($data )){
+            $this->logger->warning('No customer id and other params');  
+            $response->getBody()
+            ->write(json_encode(['error' => true, 'message' => 'No customer id and other params']));
+            return $response;
+          }
+     $status = 1;
+     $consult_status = 0;
+     $arrive_status = 0;
+     $app_id = 0;
+       try {
+				$db = $this->get(PDO::class);
+                   
+			    $sql = "INSERT INTO hyper_cancelbook (customerId,type,cuAddress,houseNo,packageDetails,packLength,packWidth,packHeight,cuMobileNo,carType,pickupAddress,dropoffAddress,cuLatitude1,cuLongitude1,cuLatitude2,cuLongitude2,travelKm,travelTiming,price,discountPrice,totalPrice,quoteId,status,bookingDate,cancelReason) 
+				VALUES (:customerId,:type,:cuAddress,:houseNo,:packageDetails,:packLength,:packWidth,:packHeight,:cuMobileNo,:carType, :pickupAddress, :dropoffAddress, :cuLatitude1, :cuLongitude1,:cuLatitude2,:cuLongitude2,:travelKm, :travelTiming, :price, :discountPrice, :totalPrice, :quoteId, :status, :bookingDate, :cancelReason)";
+                $stmt = $db->prepare($sql);
+								
+				$stmt->bindParam("customerId", $customerId);
+				$stmt->bindParam("type", $type);
+				$stmt->bindParam("cuAddress", $cuAddress);
+				$stmt->bindParam("houseNo", $houseNo);
+				$stmt->bindParam("packageDetails", $packageDetails);
+				$stmt->bindParam("packLength", $packLength);
+				$stmt->bindParam("packWidth", $packWidth);
+				$stmt->bindParam("packHeight", $packHeight);
+				$stmt->bindParam("cuMobileNo", $cuMobileNo);
+				$stmt->bindParam("carType", $carType);
+				$stmt->bindParam("pickupAddress", $pickupAddress);
+				$stmt->bindParam("dropoffAddress", $dropoffAddress);
+				$stmt->bindParam("cuLatitude1", $cuLatitude1);
+				$stmt->bindParam("cuLongitude1", $cuLongitude1);
+				$stmt->bindParam("cuLatitude2", $cuLatitude2);
+				$stmt->bindParam("cuLongitude2", $cuLongitude2);
+				$stmt->bindParam("travelKm", $travelKm);
+				$stmt->bindParam("travelTiming", $travelTiming);
+				$stmt->bindParam("price", $price);
+				$stmt->bindParam("discountPrice", $discountPrice);
+				$stmt->bindParam("totalPrice", $totalPrice);
+				$stmt->bindParam("quoteId", $quoteId);
+				$stmt->bindParam("status", $status);
+				$stmt->bindParam("bookingDate", $bookingDate);
+				$stmt->bindParam("cancelReason", $cancelReason);
+				$result = $stmt->execute();
+				$app_id = $db->lastInsertId();
+				$db = null;
+                $this->logger->info('Booking ', ['payload'=>$result]);  
+       
+                if ($result) { 
+                    
+                     $response->getBody()
+                    ->write(json_encode(['error' => false, 'result'=>$result,'message' => 'Cancelled successfully']));
+                      return $response->withHeader('content-type', 'application/json')
+                          ->withStatus(200);
+                   }                 
+                    
+        } catch(PDOException $e)
+              {
+               $error = array(
+                "message" => $e->getMessage()
+               );
+               
+               $response->getBody()
+                ->write(json_encode(['error' => true,'message' => 'Failed to insert form. Please try again' ]));
+               return $response->withHeader('content-type', 'application/json')
+                ->withStatus(500);
+              }
+    })->add(\PsrJwt\Factory\JwtMiddleware::html('!secReT$123*', 'jwt', 'Authorisation Failed'));
     
     
     
     
     
     
+$app->post('/imgupload', function (Request $request, Response $response, array $args)
+    {   $logger = $this->get(LoggerInterface::class);
+        $this->logger = $logger; 
+        
+        $data = $request->getParsedBody();
+       
+        
+        if(!empty($data['imageData'])){
+         $imageData = filter_var($data['imageData'],FILTER_SANITIZE_STRING);
+         $imageData = htmlentities($imageData, ENT_QUOTES, 'UTF-8');
+         }
+         if(!empty($data['customerId'])){
+         $customerId = filter_var($data['customerId'],FILTER_SANITIZE_STRING);
+         $customerId = htmlentities($customerId, ENT_QUOTES, 'UTF-8');
+         }
+	
+         if(empty($data )){
+            $this->logger->warning('No customer id and other params');  
+            $response->getBody()
+            ->write(json_encode(['error' => true, 'message' => 'No customer id and other params']));
+            return $response;
+          }
+     $status = 1;
+     $consult_status = 0;
+     $arrive_status = 0;
+     $app_id = 0;
+       try {
+				$db = $this->get(PDO::class);
+                   
+			    $sql = "INSERT INTO hyper_imgupload (customerId,takePicture,bookingDate) 
+				VALUES (:customerId,:takePicture,:date)";
+                $stmt = $db->prepare($sql);
+								
+				$stmt->bindParam("customerId", $customerId);
+				$stmt->bindParam("takePicture", $takePicture);
+				$stmt->bindParam("bookingDate", $bookingDate);
+				$result = $stmt->execute();
+				$app_id = $db->lastInsertId();
+				$db = null;
+                $this->logger->info('Booking ', ['payload'=>$result]);  
+       
+                if ($result) { 
+                    
+                     $response->getBody()
+                    ->write(json_encode(['error' => false, 'result'=>$result,'message' => 'Uploaded successfully']));
+                      return $response->withHeader('content-type', 'application/json')
+                          ->withStatus(200);
+                   }                 
+                    
+        } catch(PDOException $e)
+              {
+               $error = array(
+                "message" => $e->getMessage()
+               );
+               
+               $response->getBody()
+                ->write(json_encode(['error' => true,'message' => 'Failed to insert image. Please try again' ]));
+               return $response->withHeader('content-type', 'application/json')
+                ->withStatus(500);
+              }
+    })->add(\PsrJwt\Factory\JwtMiddleware::html('!secReT$123*', 'jwt', 'Authorisation Failed'));
+    
+    
+    
+    
+    
+    
+      
+$app->post('/sendotp', function (Request $request, Response $response, array $args)
+    {   $logger = $this->get(LoggerInterface::class);
+        $this->logger = $logger; 
+        
+        $data = $request->getParsedBody();
+       
+        
+        if(!empty($data['cuEmail'])){
+         $cuEmail = filter_var($data['cuEmail'],FILTER_SANITIZE_STRING);
+         $cuEmail = htmlentities($cuEmail, ENT_QUOTES, 'UTF-8');
+         }
+         if(!empty($data['cuMobileNo'])){
+         $cuMobileNo = filter_var($data['cuMobileNo'],FILTER_SANITIZE_STRING);
+         $cuMobileNo = htmlentities($cuMobileNo, ENT_QUOTES, 'UTF-8');
+         }
+	
+         if(empty($data )){
+            $this->logger->warning('No customer id and other params');  
+            $response->getBody()
+            ->write(json_encode(['error' => true, 'message' => 'No customer id and other params']));
+            return $response;
+          }
+    
+       try {
+				$db = $this->get(PDO::class);
+                   
+			    $sql = "SELECT customerId,cuName from hyper_users WHERE cuEmail=:cuEmail";
+                $stmt = $db->prepare($sql);
+								
+				$stmt->bindParam("cuEmail", $cuEmail);
+				$result = $stmt->execute();
+				
+				$db = null;
+                $this->logger->info('Booking ', ['payload'=>$result]);  
+       
+                if ($result) { 
+                    
+                     $response->getBody()
+                    ->write(json_encode(['error' => false, 'result'=>$result,'message' => 'Uploaded successfully']));
+                      return $response->withHeader('content-type', 'application/json')
+                          ->withStatus(200);
+                   }                 
+                    
+        } catch(PDOException $e)
+              {
+               $error = array(
+                "message" => $e->getMessage()
+               );
+               
+               $response->getBody()
+                ->write(json_encode(['error' => true,'message' => 'Failed to insert image. Please try again' ]));
+               return $response->withHeader('content-type', 'application/json')
+                ->withStatus(500);
+              }
+    })->add(\PsrJwt\Factory\JwtMiddleware::html('!secReT$123*', 'jwt', 'Authorisation Failed'));  
     
     
     
@@ -845,347 +1318,6 @@ cfm.cuLongitude2,cfm.totalPrice, cfm.quoteId FROM hyper_cnfmbook cfm WHERE cfm.c
         }
  });
 
-
-// CANCEL APPOINTMENT
-  $app->post('/appointmentCancel', function (Request $request, Response $response, array $args)
-    {   $logger = $this->get(LoggerInterface::class);
-        $this->logger = $logger; 
-        
-        $data = $request->getParsedBody();
-        $this->logger->info('Canceling appointment', ['payload'=>$data]);  
-       
-        
-        if(!empty($data['app_id'])){
-         $app_id = filter_var($data['app_id'],FILTER_SANITIZE_STRING);
-         $app_id = htmlentities($app_id, ENT_QUOTES, 'UTF-8');
-         }
-        if(empty($data['app_id'] )){
-            $this->logger->warning('No appointment id and other params');  
-            $response->getBody()
-            ->write(json_encode(['error' => true, 'message' => 'No appointment id and other params']));
-            return $response;
-          }
-        
-        $db = $this->get(PDO::class);
-        $sql = "UPDATE appointment SET status = 2 WHERE app_id =:app_id";
-        $stmt = $db->prepare($sql);
-        $stmt->bindParam("app_id", $app_id);
-        $result = $stmt->execute();
-        if ($result) {
-             $this->logger->info("All OK, ['message'=>'The appointment cancelled by customer']"); 
-                     $response->getBody()
-                    ->write(json_encode(['error' => false, 'result'=>$result,'message' => 'APPOINTMENT CANCELLED!']));
-                      return $response->withHeader('content-type', 'application/json')
-                          ->withStatus(200);
-        } else {
-            $this->logger->warning("Cancellation fails, ['message'=>'The appointment not cancelled. Sorry please  try again']"); 
-                     $response->getBody()
-                    ->write(json_encode(['error' => true, 'message' => 'APPOINTMENT NOT CANCELLED, please try again!']));
-                      return $response->withHeader('content-type', 'application/json')
-                          ->withStatus(500);
-        }
- 
-})->add(\PsrJwt\Factory\JwtMiddleware::html('!secReT$123*', 'jwt', 'Authorisation Failed'));
-
-
-/*
-*   PUSH NOTIFICATIONS
-*/
- 
-    $app->post('/pushRegistration', function (Request $request, Response $response, array $args)
-    {   $logger = $this->get(LoggerInterface::class);
-        $this->logger = $logger; 
-        
-        $data = $request->getParsedBody();
-        $this->logger->info('Canceling appointment', ['payload'=>$data]);  
-        $lastInsertId = '';
-        $cuEmail ='ab@c';
-        
-        if(!empty($data['fcmRegId'])){
-         $fcmRegId = filter_var($data['fcmRegId'],FILTER_SANITIZE_STRING);
-         $fcmRegId = htmlentities($fcmRegId, ENT_QUOTES, 'UTF-8');
-         }
-        if(!empty($data['apikey'])){
-         $apikey = filter_var($data['apikey'],FILTER_SANITIZE_STRING);
-         $apikey = htmlentities($apikey, ENT_QUOTES, 'UTF-8');
-         }
-         if(!empty($data['cuEmail'])){
-         $cuEmail = filter_var($data['cuEmail'],FILTER_SANITIZE_STRING);
-         $cuEmail = htmlentities($fcmRegId, ENT_QUOTES, 'UTF-8');
-         }
-       try {
-           $db = $this->get(PDO::class);
-           $sql = "INSERT INTO push_notifications (id, fcmRegId, apikey,cuEmail, createdOn) 
-				VALUES (default, :fcmRegId, :apikey,:cuEmail, default)";
-
-				$stmt = $db->prepare($sql);				
-				$stmt->bindParam("fcmRegId", $fcmRegId);
-				$stmt->bindParam("apikey", $apikey);
-			    $stmt->bindParam("cuEmail", $cuEmail);
-                
-				$result = $stmt->execute();
-				$lastInsertId = $db->lastInsertId();
-                $this->logger->info("Push registered, ['message'=>'The push fcm registered','last insert Id' => $lastInsertId, 'result' =>$result]"); 
-                $response->getBody()
-                    ->write(json_encode(['error' => false, 'result'=>$result,'message' => 'PUSH REGISTERED!']));
-                      return $response->withHeader('content-type', 'application/json')
-                          ->withStatus(200);  		
-        }
-        catch(PDOException $e) {
-         
-               $error = array(
-                "message" => $e->getMessage()
-               );
-               $this->logger->warning('Push registration system error', ['payload'=>$error]);  
-               $response->getBody()
-                ->write(json_encode(['error' => true,'message' => 'There has been some push registration error' ]));
-               return $response->withHeader('content-type', 'application/json')
-                ->withStatus(500);
-            
-        }
-    });
-$app->post('/file-upload', function(Request $request, Response $response, $args) {
-    $data = $request->getParsedBody();
-    $data['customerId'] =21; //Must come from upload form
-    $logger = $this->get(LoggerInterface::class);
-    $this->logger = $logger; 
-    //$settings = $this->get(SettingsInterface::class);
-    //$this->settings = $settings; 
-    //$settings = $this->get('settings');
-    //From settings uploadDir' => __DIR__ . '/../uploads',
-    //$directory = $settings['uploadDir'];
-    $directory = "../uploads";
-    
-    $uploadedFiles = $request->getUploadedFiles();
-    $uploadedFile = $uploadedFiles['user_file']; //Note this in form <input type="file" name="user_file" required />
-    if ($uploadedFile->getError() === UPLOAD_ERR_OK) {
-        do {
-           // $fileName = sha1(rand()).toString();substr(md5(rand()), 0, 7);
-            $fileName = bin2hex(openssl_random_pseudo_bytes(10)); //substr(md5(rand()), 0, 7);
-            
-        } while(file_exists($directory . DIRECTORY_SEPARATOR . $fileName));
-        try {
-            //moveTo can throw exception on failure
-            $uploadedFile->moveTo($directory . DIRECTORY_SEPARATOR . $fileName);
-        } catch(Exception $e) {
-            //file move exception
-            $this->logger->info("Upload fails, ['message'=>'Upload fails. Try again, 'directory' =>$directory]"); 
-               
-            $this->logger->error($e->getMessage());
-            exit($e->getMessage());
-        }
-        try {
-            
-            $db = $this->get(PDO::class);
-            $sql= 'INSERT INTO fileupload (customerId, filename, file_name_orig, file_type) VALUES (:idp, :fn, :fno, :ft)';
-            $stmt = $db->prepare($sql);            
-            $stmt->bindValue(':idp', $data['customerId']);
-            $stmt->bindValue(':fn', $fileName);
-            $stmt->bindValue(':fno', $uploadedFile->getClientFilename());
-            $stmt->bindValue(':ft', $uploadedFile->getClientMediaType());
-            $stmt->execute();
-            //$routeParser = $app->getRouteCollector()->getRouteParser();
-            //return $response->withHeader('Location', $this->router->urlFor('upload'));
-           // return $response->withHeader(' Location', $this->$routeParser->fullUrlFor('uploads'));
-             $this->logger->info("file uploaded, ['message'=>'The files uploaded, 'filename' =>$fileName]"); 
-                $response->getBody()
-                    ->write(json_encode(['error' => false, 'filename'=>$fileName,'ORIGINAL FILE NAME'=>$uploadedFile->getClientFilename()  ,'message' => 'FILES UPLOADED!']));
-                      return $response->withHeader('content-type', 'application/json')
-                          ->withStatus(200); 
-        } catch(PDOException $e) {
-            //delete the file
-            unlink($directory . DIRECTORY_SEPARATOR . $fileName);
-            //DB exception
-            $this->logger->error($e->getMessage());
-            exit($e->getMessage());
-        }
-    } else {
-        exit('File upload failed.');
-    }
-})->add(\PsrJwt\Factory\JwtMiddleware::html('!secReT$123*', 'jwt', 'Authorisation Failed'));
-
-
-$app->get('/fetch-file', function(Request $request, Response $response, $args) {
-    $params = $request->getQueryParams('id',$default = null);
-    $id= $params['id'];
-    
-    $logger = $this->get(LoggerInterface::class);
-    $this->logger = $logger; 
-    //$stream = $this->get(StreamFactoryInterface::class);
-    
-    if(!empty($id)) {
-        try {
-            $db = $this->get(PDO::class);
-            $sql= 'SELECT * FROM fileupload WHERE id = :id';
-            $stmt = $db->prepare($sql);
-            $stmt->bindValue(':id', $id);
-            $stmt->execute();
-            $fileInfo = $stmt->fetch();
-            if($fileInfo) {
-                //now you can check if visitor has privilege to download requested file
-                //$settings = $this->get('settings');
-                //$directory = $settings['uploadDir'];
-                $directory = "../uploads";
-                $fh = fopen($directory . DIRECTORY_SEPARATOR . $fileInfo['filename'], 'r');
-                //$stream = new Stream($fh);
-                //$stream = new \Slim\Http\Stream($fh);
-                //$stream = $this->streamFactory->createStreamFromFile($fh);
-                //syslog(LOG_INFO, 'name: '.$file->getClientFilename().' type: '.$file->getClientMediaType().' size: '.$file->getSize());
-                $this->logger->info("file uploaded, [$file_stream->getClientFilename(),$file_stream->getClientMediaType(),'message'=>'The files uploaded, 'filename' =>$fileName]"); 
-            
-                $origName = $fileInfo['file_name_orig'];
-                //set headers and send file contents
-                //return $response->withBody(\Nyholm\Psr7\Stream::create($stream));
-                return $response->withHeader('Cache-Control', 'private')
-                    ->withHeader('Content-Type', $fileInfo['file_type'])
-                    ->withHeader('Content-Disposition', 'inline; filename="' . $origName . '"')
-                    ->withHeader('Expires', '0')
-                    ->withBody(\Nyholm\Psr7\Stream::create($fh));
-                    // return $response->withBody(new \Slim\Http\Stream($stream));
-                    //->withHeader('Accept-Ranges', filesize($file))
-              } else {
-                return $response->withStatus(404)->write('File not found');
-            }
-        } catch(PDOException $e) {
-            return $response->withStatus(500)->write($e->getMessage());
-        }
-    } else {
-        return $response->withStatus(403)->write('Specify file id');
-    }
-})->setName('download') ->add(\PsrJwt\Factory\JwtMiddleware::html('!secReT$123*', 'jwt', 'Authorisation Failed'));
-;
-/*-------------------------For next revision------------------------------------*/
-    
-    
-    $app->group('/users', function (Group $group) {
-        $group->get('', ListUsersAction::class);
-        $group->get('/{id}', ViewUserAction::class);
-       
-    });
-  
-/* the database tables must be constructed for following queries sample  */
-$app->post('/customers-data/add', function (Request $request, Response $response, array $args) {
- $data = $request->getParsedBody();
- $name = $data["name"];
- $email = $data["email"];
- $phone = $data["phone"];
-
- $sql = "INSERT INTO customers (name, email, phone) VALUES (:name, :email, :phone)";
-
- try {
-   $db = new Db();
-   $conn = $db->connect();
-  
-   $stmt = $conn->prepare($sql);
-   $stmt->bindParam(':name', $name);
-   $stmt->bindParam(':email', $email);
-   $stmt->bindParam(':phone', $phone);
-
-   $result = $stmt->execute();
-
-   $db = null;
-   $response->getBody()->write(json_encode(['error' => false,
-		'message' => 'Thank you for posting data.']));
-   return $response
-     ->withHeader('content-type', 'application/json')
-     ->withStatus(200);
- } catch (PDOException $e) {
-   $error = array(
-     "message" => $e->getMessage()
-   );
-
-   $response->getBody()->write(json_encode($error));
-   return $response
-     ->withHeader('content-type', 'application/json')
-     ->withStatus(500);
- }
-})->add(\PsrJwt\Factory\JwtMiddleware::html('!secReT$123*', 'jwt', 'Authorisation Failed'));
-
-/* the database tables must be constructed for following queries sample  */
-$app->put( '/customers-data/update/{id}',
-    function (Request $request, Response $response, array $args) 
-{
- $id = $request->getAttribute('id');
- $data = $request->getParsedBody();
- $name = $data["name"];
- $email = $data["email"];
- $phone = $data["phone"];
-
- $sql = "UPDATE customers SET
-           name = :name,
-           email = :email,
-           phone = :phone
- WHERE id = $id";
-
- try {
-   $db = new Db();
-   $conn = $db->connect();
-  
-   $stmt = $conn->prepare($sql);
-   $stmt->bindParam(':name', $name);
-   $stmt->bindParam(':email', $email);
-   $stmt->bindParam(':phone', $phone);
-
-   $result = $stmt->execute();
-
-   $db = null;
-   echo "Update successful! ";
-   $response->getBody()->write(json_encode($result));
-   return $response
-     ->withHeader('content-type', 'application/json')
-     ->withStatus(200);
- } catch (PDOException $e) {
-   $error = array(
-     "message" => $e->getMessage()
-   );
-
-   $response->getBody()->write(json_encode($error));
-   return $response
-     ->withHeader('content-type', 'application/json')
-     ->withStatus(500);
- }
-})->add(\PsrJwt\Factory\JwtMiddleware::html('!secReT$123*', 'jwt', 'Authorisation Failed'));
-
-
-/* the database tables must be constructed for following queries sample  */
-$app->get('/tests/get-routes/', function ($request, $response, $args) use ($app) {
-    $routes = $app->getRouteCollector()->getRoutes();
-    foreach ($routes as $route) {
-        echo $route->getIdentifier() . " â†’ ";
-        echo ($route->getName() ?? "(unnamed)") . " â†’ ";
-        echo $route->getPattern();
-        echo "<br><br>";
-    }
-
-    return $response;
-});
-/*
-From there, one can use something like this to get the URL for a given route:
-
-$routeParser = \Slim\Routing\RouteContext::fromRequest($request)->getRouteParser();
-$path = $routeParser->urlFor($nameofroute, $data, $queryParams);
-
-*/
-/* the database tables must be constructed for following queries sample  */
-$app->get('/db-test', function (Request $request, Response $response) {
-        $db = $this->get(PDO::class);
-        $sth = $db->prepare("SELECT * FROM tasks ORDER BY task");
-        $sth->execute();
-        $data = $sth->fetchAll(PDO::FETCH_ASSOC);
-        $payload = json_encode($data);
-        $response->getBody()->write($payload);
-        
-        $logger = $this->get(LoggerInterface::class);
-        $this->logger = $logger;
-        $this->logger->info("Slim-API-Skeleton '/' route");
-        $this->logger->info('db-test works', ['payload'=>$payload]);        
-   
-    
-        $this->logger->warning("message test2 works");
-     
-        return $response->withHeader('Content-Type', 'application/json');
-    });
-    
     $app->post('/jwt', function (Request $request, Response $response) {
          $logger = $this->get(LoggerInterface::class);
         $this->logger = $logger;
