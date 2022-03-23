@@ -1142,6 +1142,268 @@ $app->post('/sendotp', function (Request $request, Response $response, array $ar
     
     
     
+       
+$app->post('/myonesignal', function (Request $request, Response $response, array $args)
+    {   $logger = $this->get(LoggerInterface::class);
+        $this->logger = $logger; 
+        
+        $data = $request->getParsedBody();
+       
+
+
+
+        
+        if(!empty($data['driverId'])){
+         $driverId = filter_var($data['driverId'],FILTER_SANITIZE_STRING);
+         $driverId = htmlentities($driverId, ENT_QUOTES, 'UTF-8');
+         }
+         if(!empty($data['drEmail'])){
+         $drEmail = filter_var($data['drEmail'],FILTER_SANITIZE_STRING);
+         $drEmail = htmlentities($drEmail, ENT_QUOTES, 'UTF-8');
+         }
+	 if(!empty($data['MyOneSignalId'])){
+         $MyOneSignalId = filter_var($data['MyOneSignalId'],FILTER_SANITIZE_STRING);
+         $MyOneSignalId = htmlentities($MyOneSignalId, ENT_QUOTES, 'UTF-8');
+         }
+	
+      if(!empty($data['myGoogleFirebaseId'])){
+         $myGoogleFirebaseId = filter_var($data['myGoogleFirebaseId'],FILTER_SANITIZE_STRING);
+         $myGoogleFirebaseId = htmlentities($myGoogleFirebaseId, ENT_QUOTES, 'UTF-8');
+         }
+	
+         if(empty($data )){
+            $this->logger->warning('No driver id and other params');  
+            $response->getBody()
+            ->write(json_encode(['error' => true, 'message' => 'No driver id and other params']));
+            return $response;
+          }
+    
+       try {
+				$db = $this->get(PDO::class);
+                   
+			    $sql = "UPDATE hyper_drivers SET MyOneSignalId =:MyOneSignalId, myGoogleFirebaseId =:myGoogleFirebaseId, date =:date WHERE driverId=:driverId";
+                $stmt = $db->prepare($sql);
+								
+				$stmt->bindParam("MyOneSignalId", $MyOneSignalId);
+		$stmt->bindParam("myGoogleFirebaseId", $myGoogleFirebaseId);
+		$stmt->bindParam("driverId", $driverId);
+		$stmt->bindParam("date", $date);
+				$result = $stmt->execute();
+				
+				$db = null;
+                $this->logger->info(' ', ['payload'=>$result]);  
+       
+                if ($result) { 
+                    
+                     $response->getBody()
+                    ->write(json_encode(['error' => false, 'result'=>$result,'message' => 'Updated successfully']));
+                      return $response->withHeader('content-type', 'application/json')
+                          ->withStatus(200);
+                   }                 
+                    
+        } catch(PDOException $e)
+              {
+               $error = array(
+                "message" => $e->getMessage()
+               );
+               
+               $response->getBody()
+                ->write(json_encode(['error' => true,'message' => 'Failed to insert image. Please try again' ]));
+               return $response->withHeader('content-type', 'application/json')
+                ->withStatus(500);
+              }
+    })->add(\PsrJwt\Factory\JwtMiddleware::html('!secReT$123*', 'jwt', 'Authorisation Failed'));  
+    
+    
+    
+    
+    
+    $app->post('/driverstatus', function (Request $request, Response $response, array $args)
+    {   $logger = $this->get(LoggerInterface::class);
+        $this->logger = $logger; 
+        
+        $data = $request->getParsedBody();
+       
+ $date = date('Y-m-d');	
+
+
+
+ $status = "Alive";
+        
+        if(!empty($data['driverId'])){
+         $driverId = filter_var($data['driverId'],FILTER_SANITIZE_STRING);
+         $driverId = htmlentities($driverId, ENT_QUOTES, 'UTF-8');
+         }
+         if(!empty($data['drLatitude'])){
+         $drLatitude = filter_var($data['drLatitude'],FILTER_SANITIZE_STRING);
+         $drLongitude = htmlentities($drLatitude, ENT_QUOTES, 'UTF-8');
+         }
+	 if(!empty($data['drLongitude'])){
+         $drLongitude = filter_var($data['drLongitude'],FILTER_SANITIZE_STRING);
+         $drLongitude = htmlentities($drLongitude, ENT_QUOTES, 'UTF-8');
+         }
+	
+      if(!empty($data['myGoogleFirebaseId'])){
+         $myGoogleFirebaseId = filter_var($data['myGoogleFirebaseId'],FILTER_SANITIZE_STRING);
+         $myGoogleFirebaseId = htmlentities($myGoogleFirebaseId, ENT_QUOTES, 'UTF-8');
+         }
+	
+         if(empty($data )){
+            $this->logger->warning('No driver id and other params');  
+            $response->getBody()
+            ->write(json_encode(['error' => true, 'message' => 'No driver id and other params']));
+            return $response;
+          }
+    
+       try {
+				$db = $this->get(PDO::class);
+                   
+			    $sql = "INSERT INTO hyper_driverstatus (driverId,drLatitude,drLongitude,status,bookingDate) 
+
+				VALUES (:driverId, :drLatitude, :drLongitude,:status, :bookingDate)";
+                $stmt = $db->prepare($sql);
+								
+				$stmt->bindParam("driverId", $driverId);
+				$stmt->bindParam("drLatitude", $drLatitude);
+				$stmt->bindParam("drLongitude", $drLongitude);
+				$stmt->bindParam("status", $status);
+				$stmt->bindParam("bookingDate", $bookingDate);
+				$result = $stmt->execute();
+				
+				$db = null;
+                $this->logger->info(' ', ['payload'=>$result]);  
+       
+                if ($result) { 
+                    
+                     $response->getBody()
+                    ->write(json_encode(['error' => false, 'result'=>$result,'message' => 'Driver Status Inserted Successfully']));
+                      return $response->withHeader('content-type', 'application/json')
+                          ->withStatus(200);
+                   }                 
+                    
+        } catch(PDOException $e)
+              {
+               $error = array(
+                "message" => $e->getMessage()
+               );
+               
+               $response->getBody()
+                ->write(json_encode(['error' => true,'message' => 'Failed to insert image. Please try again' ]));
+               return $response->withHeader('content-type', 'application/json')
+                ->withStatus(500);
+              }
+    })->add(\PsrJwt\Factory\JwtMiddleware::html('!secReT$123*', 'jwt', 'Authorisation Failed'));  
+        
+    
+    
+        $app->post('/driverrequest', function (Request $request, Response $response, array $args)
+    {   $logger = $this->get(LoggerInterface::class);
+        $this->logger = $logger; 
+        
+        $data = $request->getParsedBody();
+       
+$status1 = "quoting";
+
+ $status2 = "cancel";
+
+$date = date('Y-m-d');
+
+$status = "logged in";
+        
+        if(!empty($data['driverId'])){
+         $driverId = filter_var($data['driverId'],FILTER_SANITIZE_STRING);
+         $driverId = htmlentities($driverId, ENT_QUOTES, 'UTF-8');
+         }
+        
+         if(empty($data )){
+            $this->logger->warning('No driver id and other params');  
+            $response->getBody()
+            ->write(json_encode(['error' => true, 'message' => 'No driver id and other params']));
+            return $response;
+          }
+    
+       try {
+				$db = $this->get(PDO::class);
+                   
+			    $sql = "SELECT driverId from hyper_driverstatus WHERE driverId=:driverId order by statusId DESC LIMIT 1";
+                $stmt = $db->prepare($sql);
+								
+				$stmt->bindParam(":driverId", $driverId);
+				$result = $stmt->execute();
+				
+				$db = null;
+                $this->logger->info(' ', ['payload'=>$result]);  
+       
+                if ($result) { 
+                    if($res > 0)
+	{
+		
+	try {
+
+		
+
+		$sql = "UPDATE hyper_driverstatus SET drLatitude =:drLatitude, drLongitude =:drLongitude, date =:date WHERE driverId=:driverId
+
+ order by statusId DESC LIMIT 1";
+
+		$db = $this->get(PDO::class);
+		$stmt = $db->prepare($sql);
+		$stmt->bindParam("drLatitude", $drLatitude);
+		$stmt->bindParam("drLongitude", $drLongitude);
+		$stmt->bindParam("driverId", $driverId);
+		$stmt->bindParam("date", $date);
+		$stmt->execute();
+		$db = null;
+	} catch(PDOException $e) {
+		echo '{"error":{"text":'. $e->getMessage() .'}}'; 
+	}
+
+
+	}else{
+
+	   try {
+		
+
+		$sql = "INSERT INTO hyper_driverstatus (driverId,drLatitude,drLongitude,status,date) 
+			VALUES (:driverId,:drLatitude,:drLongitude,:status,:date)";
+$db = $this->get(PDO::class);
+		$stmt = $db->prepare($sql);
+		$stmt->bindParam("driverId", $driverId);
+		$stmt->bindParam("drLatitude", $drLatitude);
+		$stmt->bindParam("drLongitude", $drLongitude);
+		$stmt->bindParam("status", $status);
+		$stmt->bindParam("date", $date);
+		$result = $stmt->execute();
+		$db = null;
+	} catch(PDOException $e) {
+   			
+		$error = array(
+                "message" => $e->getMessage()
+               );
+               
+               $response->getBody()
+                ->write(json_encode(['error' => true,'message' => 'Failed to insert image. Please try again' ]));
+               return $response->withHeader('content-type', 'application/json')
+                ->withStatus(500);
+	}
+                     $response->getBody()
+                    ->write(json_encode(['error' => false, 'result'=>$result,'message' => 'Driver Status Inserted Successfully']));
+                      return $response->withHeader('content-type', 'application/json')
+                          ->withStatus(200);
+                   }                 
+                    
+        } catch(PDOException $e)
+              {
+               $error = array(
+                "message" => $e->getMessage()
+               );
+               
+               $response->getBody()
+                ->write(json_encode(['error' => true,'message' => 'Failed to insert image. Please try again' ]));
+               return $response->withHeader('content-type', 'application/json')
+                ->withStatus(500);
+              }
+    })->add(\PsrJwt\Factory\JwtMiddleware::html('!secReT$123*', 'jwt', 'Authorisation Failed'));  
     
     
     
@@ -1317,6 +1579,235 @@ $app->post('/sendotp', function (Request $request, Response $response, array $ar
                 ->withStatus(500);
         }
  });
+     
+    $app->post('/driverrequest1', function (Request $request, Response $response, array $args)
+    {   $logger = $this->get(LoggerInterface::class);
+        $this->logger = $logger; 
+        
+        $data = $request->getParsedBody();
+       
+ $status1 = "quoting";
+
+ $status2 = "cancel";
+
+        
+        if(!empty($data['driverId'])){
+         $driverId = filter_var($data['driverId'],FILTER_SANITIZE_STRING);
+         $driverId = htmlentities($driverId, ENT_QUOTES, 'UTF-8');
+         }
+         
+         if(empty($data )){
+            $this->logger->warning('No driver id and other params');  
+            $response->getBody()
+            ->write(json_encode(['error' => true, 'message' => 'No driver id and other params']));
+            return $response;
+          }
+    
+       try {
+				$db = $this->get(PDO::class);
+                   
+			    $sql = "SELECT MAX(orderId) orderId,customerId,cuAddress,houseNo,pickupAddress,dropoffAddress,status FROM hyper_cnfmbook
+
+ WHERE status = '$status1' OR status = '$status2' group by customerId DESC LIMIT 1";
+                $stmt = $db->prepare($sql);
+								
+				
+				$result = $stmt->execute();
+				
+				$db = null;
+                $this->logger->info(' ', ['payload'=>$result]);  
+       
+                if ($result) { 
+                    
+                     $response->getBody()
+                    ->write(json_encode(['error' => false, 'result'=>$result,'message' => 'Driver Status Inserted Successfully']));
+                      return $response->withHeader('content-type', 'application/json')
+                          ->withStatus(200);
+                   }                 
+                    
+        } catch(PDOException $e)
+              {
+               $error = array(
+                "message" => $e->getMessage()
+               );
+               
+               $response->getBody()
+                ->write(json_encode(['error' => true,'message' => 'Failed to insert image. Please try again' ]));
+               return $response->withHeader('content-type', 'application/json')
+                ->withStatus(500);
+              }
+    })->add(\PsrJwt\Factory\JwtMiddleware::html('!secReT$123*', 'jwt', 'Authorisation Failed'));  
+         
+     
+     
+   
+     $app->get('/customerdetails', function (Request $request, Response $response)
+    {
+        $logger = $this->get(LoggerInterface::class);
+        $this->logger = $logger;
+        //$data = $request->getParsedBody();
+        $params = $request->getQueryParams('customerId', $default = null);
+        $status1 = "quoting";
+
+ $status2 = "cancel";
+       
+        if(empty($params )){
+          
+            $response->getBody()
+            ->write(json_encode(['error' => true, 'message' => 'Required customerId']));
+            return $response;
+          }
+        $customerId= $params['customerId'];
+        
+        $this->logger->info('Got customerId', ['payload'=>$customerId]);  
+       
+        $db = $this->get(PDO::class);
+        $sth = $db->prepare("SELECT MAX(orderId) orderId,MAX(createdAt) createdAt,customerId,cuAddress,houseNo,pickupAddress,dropoffAddress,packLength,packWidth,packHeight,cuMobileNo,carType,travelKm,travelTiming,cuLatitude1,cuLongitude1,cuLatitude2,cuLongitude2,totalPrice,quoteId,status FROM hyper_cnfmbook
+
+ WHERE status = '$status1' OR status = '$status2' group by customerId DESC LIMIT 1");
+        $sth->execute();
+        $data = $sth->fetchAll(PDO::FETCH_ASSOC);
+        $payload = json_encode($data);
+        $this->logger->info('Got order details', ['payload'=>$payload]);  
+       
+        $response->getBody()
+            ->write($payload);
+        return $response->withHeader('Content-Type', 'application/json');
+    }) ->add(\PsrJwt\Factory\JwtMiddleware::html('!secReT$123*', 'jwt', 'Authorisation Failed'));  
+     
+     
+     
+     
+      $app->post('/driverconfirm', function (Request $request, Response $response, array $args)
+    {   $logger = $this->get(LoggerInterface::class);
+        $this->logger = $logger; 
+        
+        $data = $request->getParsedBody();
+       
+ $status = "booked";
+
+        
+        if(!empty($data['customerId'])){
+         $customerId = filter_var($data['customerId'],FILTER_SANITIZE_STRING);
+         $customerId = htmlentities($customerId, ENT_QUOTES, 'UTF-8');
+         }
+         
+         if(empty($data )){
+            $this->logger->warning('No driver id and other params');  
+            $response->getBody()
+            ->write(json_encode(['error' => true, 'message' => 'No driver id and other params']));
+            return $response;
+          }
+    
+       try {
+				$db = $this->get(PDO::class);
+                   
+			    $sql = "UPDATE hyper_cnfmbook SET status =:status WHERE customerId=:customerId order by orderId DESC LIMIT 1";
+                $stmt = $db->prepare($sql);
+								
+				
+				$result = $stmt->execute();
+				
+				$db = null;
+                $this->logger->info(' ', ['payload'=>$result]);  
+       
+                if ($result) { 
+                    try {
+        	$db = $this->get(PDO::class);
+
+$sql = "SELECT cfm.customerId, cfm.pickupAddress, cfm.dropoffAddress, cfm.status FROM hyper_cnfmbook cfm 
+
+WHERE cfm.status = '$status' AND cfm.customerId = $customerId order by cfm.orderId DESC LIMIT 1";
+
+		$stmt = $db->query($sql);  
+		$result = $stmt->fetchAll(PDO::FETCH_OBJ);
+		$db = null;
+		  $response->getBody()
+                    ->write(json_encode(['error' => false, 'result'=>$result,'message' => 'Driver Status Inserted Successfully']));
+                      return $response->withHeader('content-type', 'application/json')
+                          ->withStatus(200);
+	} catch(PDOException $e) {
+		 $error = array(
+                "message" => $e->getMessage()
+               );
+               
+               $response->getBody()
+                ->write(json_encode(['error' => true,'message' => 'Failed to insert image. Please try again' ]));
+               return $response->withHeader('content-type', 'application/json')
+                ->withStatus(500);
+	}
+
+                   
+                   }                 
+                    
+        } catch(PDOException $e)
+              {
+               $error = array(
+                "message" => $e->getMessage()
+               );
+               
+               $response->getBody()
+                ->write(json_encode(['error' => true,'message' => 'Failed to insert image. Please try again' ]));
+               return $response->withHeader('content-type', 'application/json')
+                ->withStatus(500);
+              }
+    })->add(\PsrJwt\Factory\JwtMiddleware::html('!secReT$123*', 'jwt', 'Authorisation Failed'));  
+         
+     
+     
+    $app->get('/driverpickup', function (Request $request, Response $response)
+    {
+        $logger = $this->get(LoggerInterface::class);
+        $this->logger = $logger;
+        //$data = $request->getParsedBody();
+        $params = $request->getQueryParams('customerId', $default = null);
+     $status = "pickup";
+        if(empty($params )){
+          
+            $response->getBody()
+            ->write(json_encode(['error' => true, 'message' => 'Required customerId']));
+            return $response;
+          }
+        $customerId= $params['customerId'];
+        
+        $this->logger->info('Got customerId', ['payload'=>$customerId]);  
+       
+        $db = $this->get(PDO::class);
+        $sth = $db->prepare("UPDATE hyper_cnfmbook SET status =:status WHERE customerId=:customerId order by orderId DESC LIMIT 1");
+        $sth->execute();
+        $stmt->bindParam("status", $status);
+		$stmt->bindParam("customerId", $customerId);
+        $data = $sth->fetchAll(PDO::FETCH_ASSOC);
+        $payload = json_encode($data);
+        $this->logger->info('Got order details', ['payload'=>$payload]);  
+       
+        $response->getBody()
+            ->write($payload);
+        return $response->withHeader('Content-Type', 'application/json');
+    }) ->add(\PsrJwt\Factory\JwtMiddleware::html('!secReT$123*', 'jwt', 'Authorisation Failed'));   
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
+     
 
     $app->post('/jwt', function (Request $request, Response $response) {
          $logger = $this->get(LoggerInterface::class);
