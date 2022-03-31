@@ -1789,6 +1789,175 @@ WHERE cfm.status = '$status' AND cfm.customerId = $customerId order by cfm.order
      
      
      
+      $app->post('/drivercancel', function (Request $request, Response $response, array $args)
+    {   $logger = $this->get(LoggerInterface::class);
+        $this->logger = $logger; 
+        
+        $data = $request->getParsedBody();
+       
+
+        
+        if(!empty($data['customerId'])){
+         $customerId = filter_var($data['customerId'],FILTER_SANITIZE_STRING);
+         $customerId = htmlentities($customerId, ENT_QUOTES, 'UTF-8');
+         }
+        
+         if(empty($data )){
+            $this->logger->warning('No customer id and other params');  
+            $response->getBody()
+            ->write(json_encode(['error' => true, 'message' => 'No driver id and other params']));
+            return $response;
+          }
+    
+       try {
+				$db = $this->get(PDO::class);
+                   
+			    $sql = "UPDATE hyper_cnfmbook SET status =:status WHERE customerId=:customerId order by orderId DESC LIMIT 1";
+                $stmt = $db->prepare($sql);
+								
+				$stmt->bindParam("status", $status);
+		$stmt->bindParam("customerId", $customerId);
+				$result = $stmt->execute();
+				
+				$db = null;
+                $this->logger->info(' ', ['payload'=>$result]);  
+       
+                if ($result) { 
+                    
+                     $response->getBody()
+                    ->write(json_encode(['error' => false, 'result'=>$result,'message' => 'Cancelled Successfully']));
+                      return $response->withHeader('content-type', 'application/json')
+                          ->withStatus(200);
+                   }                 
+                    
+        } catch(PDOException $e)
+              {
+               $error = array(
+                "message" => $e->getMessage()
+               );
+               
+               $response->getBody()
+                ->write(json_encode(['error' => true,'message' => 'Failed to insert image. Please try again' ]));
+               return $response->withHeader('content-type', 'application/json')
+                ->withStatus(500);
+              }
+    })->add(\PsrJwt\Factory\JwtMiddleware::html('!secReT$123*', 'jwt', 'Authorisation Failed'));  
+         
+          
+     
+     $app->get('/driverfinish', function (Request $request, Response $response)
+    {
+        $logger = $this->get(LoggerInterface::class);
+        $this->logger = $logger;
+        //$data = $request->getParsedBody();
+        $params = $request->getQueryParams('customerId', $default = null);
+     $status = "pickup";
+        if(empty($params )){
+          
+            $response->getBody()
+            ->write(json_encode(['error' => true, 'message' => 'Required customerId']));
+            return $response;
+          }
+        $customerId= $params['customerId'];
+        
+        $this->logger->info('Got customerId', ['payload'=>$customerId]);  
+       
+        $db = $this->get(PDO::class);
+        $sth = $db->prepare("UPDATE hyper_cnfmbook SET status =:status WHERE customerId=:customerId order by orderId DESC LIMIT 1");
+        $sth->execute();
+        $stmt->bindParam("status", $status);
+		$stmt->bindParam("customerId", $customerId);
+        $data = $sth->fetchAll(PDO::FETCH_ASSOC);
+        $payload = json_encode($data);
+        $this->logger->info('Got order details', ['payload'=>$payload]);  
+       
+        $response->getBody()
+            ->write($payload);
+        return $response->withHeader('Content-Type', 'application/json');
+    }) ->add(\PsrJwt\Factory\JwtMiddleware::html('!secReT$123*', 'jwt', 'Authorisation Failed'));   
+     
+     
+     
+          $app->get('/driverearnings', function (Request $request, Response $response)
+    {
+        $logger = $this->get(LoggerInterface::class);
+        $this->logger = $logger;
+        //$data = $request->getParsedBody();
+        $params = $request->getQueryParams('customerId', $default = null);
+     $status = "pickup";
+        if(empty($params )){
+          
+            $response->getBody()
+            ->write(json_encode(['error' => true, 'message' => 'Required customerId']));
+            return $response;
+          }
+        $customerId= $params['customerId'];
+        
+        $this->logger->info('Got customerId', ['payload'=>$customerId]);  
+       
+        $db = $this->get(PDO::class);
+        $sth = $db->prepare("SELECT driverId,customerId,pickupAddress,cuAddress,dropoffAddress,travelKm,travelTiming,totalPrice,drLatitude,drLongitude,status,date from hyper_driverbook
+
+WHERE driverId = $driverId AND customerId = $customerId order by deliveryId DESC LIMIT 1");
+        $sth->execute();
+        $stmt->bindParam("status", $status);
+		$stmt->bindParam("customerId", $customerId);
+        $data = $sth->fetchAll(PDO::FETCH_ASSOC);
+        $payload = json_encode($data);
+        $this->logger->info('Got driver earning details', ['payload'=>$payload]);  
+       
+        $response->getBody()
+            ->write($payload);
+        return $response->withHeader('Content-Type', 'application/json');
+    }) ->add(\PsrJwt\Factory\JwtMiddleware::html('!secReT$123*', 'jwt', 'Authorisation Failed'));   
+     
+     
+     
+     
+     
+      $app->get('/driverhistory', function (Request $request, Response $response)
+    {
+        $logger = $this->get(LoggerInterface::class);
+        $this->logger = $logger;
+        //$data = $request->getParsedBody();
+        $params = $request->getQueryParams('customerId', $default = null);
+     $status = "pickup";
+        if(empty($params )){
+          
+            $response->getBody()
+            ->write(json_encode(['error' => true, 'message' => 'Required customerId']));
+            return $response;
+          }
+        $driverId= $params['driverId'];
+        
+        $this->logger->info('Got driverId', ['payload'=>$driverId]);  
+       
+        $db = $this->get(PDO::class);
+        $sth = $db->prepare("SELECT dri.deliveryId, dri.driverId, dri.customerId, dri.cuAddress, dri.pickupAddress, dri.dropoffAddress, dri.travelKm,
+
+ dri.travelTiming , dri.totalPrice , dri.drLatitude ,dri.drLongitude ,dr.drName, dr.drEmail,dr.drMobileNo  FROM hyper_driverbook dri INNER JOIN hyper_drivers dr
+
+ ON dri.driverId = dr.driverId
+
+ WHERE dri.driverId = $driverId order by dri.deliveryId");
+        $sth->execute();
+        $stmt->bindParam("status", $status);
+		$stmt->bindParam("driverId", $driverId);
+        $data = $sth->fetchAll(PDO::FETCH_ASSOC);
+        $payload = json_encode($data);
+        $this->logger->info('Got driver history', ['payload'=>$payload]);  
+       
+        $response->getBody()
+            ->write($payload);
+        return $response->withHeader('Content-Type', 'application/json');
+    }) ->add(\PsrJwt\Factory\JwtMiddleware::html('!secReT$123*', 'jwt', 'Authorisation Failed'));   
+     
+     
+     
+     
+     
+     
+     
      
      
      
