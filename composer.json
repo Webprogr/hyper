@@ -29,7 +29,7 @@
         "rbdwllr/psr-jwt": "^1.0",
         "selective/basepath": "^2.1",
         "slim/psr7": "^1.5",
-        "slim/slim": "^4.9",
+        "slim/slim": "^4.11",
         "tuupola/base62": "^2.1"
     },
     "require-dev": {
