@@ -28,7 +28,7 @@
         "php-di/php-di": "^6.3",
         "rbdwllr/psr-jwt": "^1.0",
         "selective/basepath": "^2.1",
-        "slim/psr7": "^1.5",
+        "slim/psr7": "^1.6",
         "slim/slim": "^4.9",
         "tuupola/base62": "^2.1"
     },
